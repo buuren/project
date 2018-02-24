@@ -32,6 +32,7 @@
 * Find and replace all files with string TOREPLACE with your Project Name
     * ```grep -rl TOREPLACE .```
     * ```Rename project directory TOREPLACE```
+    * Change python version in Pipfile
 * Run `make all` to prepare dev environment:
     * Create virtual environment **.venv/** under project under
     * Install system dependencies (pipenv, verchew)
