@@ -34,9 +34,9 @@
     * ```Rename project directory TOREPLACE```
     * Change python version in Pipfile
 * Run `make all` to prepare dev environment:
-    * Create virtual environment **.venv/** under project under
-    * Install system dependencies (pipenv, verchew)
-    * Install project dependencies
-    * Lock dependencies
+    * Creates virtual environment **.venv/** under project under
+    * Installs system dependencies (pipenv, verchew)
+    * Installs project dependencies
+    * Locks dependencies in Pipfile.lock
 * Run `make doctor` again to verify additional system dependencies
 * Run `make help` for more make examples
