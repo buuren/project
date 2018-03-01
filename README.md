@@ -40,3 +40,4 @@
     * Locks dependencies in Pipfile.lock
 * Run `make doctor` again to verify additional system dependencies
 * Run `make help` for more make examples
+* Replace the contents of this README with your project README description 
