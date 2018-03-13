@@ -1,0 +1,3 @@
+"""
+for custom exceptions
+"""
