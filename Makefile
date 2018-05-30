@@ -2,6 +2,7 @@
 PROJECT := TOREPLACE
 PACKAGE := TOREPLACE
 REPOSITORY := TOREPLACE/TOREPLACE
+PYTHON=/usr/bin/python3.6
 
 # Project paths
 PACKAGES := $(PACKAGE) tests
@@ -34,7 +35,7 @@ watch: install .clean-test ## Continuously run all CI tasks when files chanage
 
 .PHONY: run
 run: install
-	pipenv run python $(PACKAGE)/__main__.py
+	pipenv run $(PYTHON) $(PACKAGE)/__main__.py
 
 # SYSTEM DEPENDENCIES #########################################################
 
@@ -51,12 +52,12 @@ METADATA := $(PACKAGE).egg-info
 install: $(DEPENDENCIES) $(METADATA)
 
 $(DEPENDENCIES):
-	pipenv install --dev
+	pipenv install --python=$(PYTHON) --dev
 	pipenv check
 	touch $@
 
 $(METADATA): setup.py
-	pipenv run python setup.py develop
+	pipenv run $(PYTHON) setup.py develop
 	touch $@
 
 # CHECKS: LINTER, STYLE, DOCS #################################################
@@ -132,9 +133,9 @@ build: dist
 dist: install $(DIST_FILES)
 $(DIST_FILES): $(MODULES)
 	rm -f $(DIST_FILES)
-	pipenv run python setup.py check --restructuredtext --strict --metadata
-	pipenv run python setup.py sdist
-	pipenv run python setup.py bdist_wheel
+	pipenv run $(PYTHON) setup.py check --restructuredtext --strict --metadata
+	pipenv run $(PYTHON) setup.py sdist
+	pipenv run $(PYTHON) setup.py bdist_wheel
 
 .PHONY: exe
 exe: install $(EXE_FILES)
