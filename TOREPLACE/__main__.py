@@ -1,5 +1,6 @@
 import click
-from . import Init
+
+from utils.initiator import Initiator
 from cli.options import Options
 from decorators.cli import add_options
 
@@ -12,7 +13,7 @@ if __name__ == '__main__':
     )
 
     # Load configuration files
-    init = Init()
+    init = Initiator()
 
     # Initate Options
     options_object = Options()
