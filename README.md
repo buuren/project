@@ -41,3 +41,23 @@
 * Run `make doctor` again to verify additional system dependencies
 * Run `make help` for more make examples
 * Replace the contents of this README with your project README description 
+
+### Example
+
+`make`
+
+`make run`
+
+```
+# > make run
+pipenv run python3.6 TOREPLACE/__main__.py
+Usage: __main__.py [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --verbose  Enables verbose mode.  [default: False]
+  --help     Show this message and exit.
+
+Commands:
+  test
+
+```
