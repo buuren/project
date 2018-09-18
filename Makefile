@@ -8,6 +8,12 @@ PYTHON=/usr/bin/python3.6
 PACKAGES := $(PACKAGE) tests
 CONFIG := $(wildcard *.py)
 MODULES := $(wildcard $(PACKAGE)/*.py)
+PIPENV := pipenv
+
+# DOCKER
+DOCKER := /usr/bin/docker
+IMAGE := TOREPLACE
+TAG := TOREPLACE
 
 # Virtual environment paths
 export PIPENV_SHELL_COMPAT=true
@@ -17,14 +23,14 @@ ENV := .venv
 
 # MAIN TASKS ##################################################################
 
-SNIFFER := pipenv run sniffer
+SNIFFER := $(PIPENV) run sniffer
 
 .PHONY: all
 all: install
 
 .PHONY: shell
 shell: install ## Spawn shell in virtual environment
-	pipenv shell
+	$(PIPENV) shell
 
 .PHONY: ci
 ci: check test ## Run all tasks that determine CI status (checks + tests)
@@ -35,13 +41,13 @@ watch: install .clean-test ## Continuously run all CI tasks when files chanage
 
 .PHONY: run
 run: install
-	pipenv run $(PYTHON) $(PACKAGE)/__main__.py
+	$(PIPENV) run $(PYTHON) $(PACKAGE)/__main__.py
 
 # SYSTEM DEPENDENCIES #########################################################
 
 .PHONY: doctor
 doctor:  ## Confirm system dependencies are available
-	pipenv run verchew
+	$(PIPENV) run verchew
 
 # PROJECT DEPENDENCIES ########################################################
 
@@ -52,19 +58,19 @@ METADATA := $(PACKAGE).egg-info
 install: $(DEPENDENCIES) $(METADATA)
 
 $(DEPENDENCIES):
-	pipenv install --python=$(PYTHON) --dev
-	pipenv check
+	$(PIPENV) install --python=$(PYTHON) --dev
+	$(PIPENV) check
 	touch $@
 
 $(METADATA): setup.py
-	pipenv run $(PYTHON) setup.py develop
+	$(PIPENV) run $(PYTHON) setup.py develop
 	touch $@
 
 # CHECKS: LINTER, STYLE, DOCS #################################################
 
-PYLINT := pipenv run pylint
-PYCODESTYLE := pipenv run pycodestyle
-PYDOCSTYLE := pipenv run pydocstyle
+PYLINT := $(PIPENV) run pylint
+PYCODESTYLE := $(PIPENV) run pycodestyle
+PYDOCSTYLE := $(PIPENV) run pydocstyle
 
 .PHONY: check
 check: pylint pycodestyle pydocstyle ## Run linters and static analysis
@@ -87,8 +93,8 @@ pydocstyle: install
 
 # TESTS #######################################################################
 
-NOSE := pipenv run nosetests
-COVERAGE := pipenv run coverage
+NOSE := $(PIPENV) run nosetests
+COVERAGE := $(PIPENV) run coverage
 RANDOM_SEED ?= $(shell date +%s)
 
 NOSE_OPTIONS := --with-doctest
@@ -120,8 +126,8 @@ coverage-report: install .clean-test
 
 # BUILD #######################################################################
 
-PYINSTALLER := pipenv run pyinstaller
-PYINSTALLER_MAKESPEC := pipenv run pyi-makespec
+PYINSTALLER := $(PIPENV) run pyinstaller
+PYINSTALLER_MAKESPEC := $(PIPENV) run pyi-makespec
 
 DIST_FILES := dist/*.tar.gz dist/*.whl
 EXE_FILES := dist/$(PROJECT).*
@@ -133,9 +139,9 @@ build: dist
 dist: install $(DIST_FILES)
 $(DIST_FILES): $(MODULES)
 	rm -f $(DIST_FILES)
-	pipenv run $(PYTHON) setup.py check --restructuredtext --strict --metadata
-	pipenv run $(PYTHON) setup.py sdist
-	pipenv run $(PYTHON) setup.py bdist_wheel
+	$(PIPENV) run $(PYTHON) setup.py check --restructuredtext --strict --metadata
+	$(PIPENV) run $(PYTHON) setup.py sdist
+	$(PIPENV) run $(PYTHON) setup.py bdist_wheel
 
 .PHONY: exe
 exe: install $(EXE_FILES)
@@ -147,9 +153,29 @@ $(EXE_FILES): $(MODULES) $(PROJECT).spec
 $(PROJECT).spec:
 	$(PYINSTALLER_MAKESPEC) $(PACKAGE)/__main__.py --onefile --windowed --name=$(PROJECT)
 
+# DOCKER ######################################################################
+
+.PHONY: docker-build
+docker-build: ## Build docker image
+	$(DOCKER) build \
+		--tag=$(IMAGE):$(TAG) \
+		.
+
+.PHONY: docker-push
+docker-push: ## Push docker image
+	$(DOCKER) push $(IMAGE):$(TAG)
+
+.PHONY: docker-dev
+docker-dev: ## Start bash in docker in container environment
+	$(DOCKER) run -it -v $(shell pwd):/home/python/app --entrypoint=/bin/bash $(IMAGE):$(TAG)
+
+.PHONY: docker-run
+docker-run: ## Run app in docker container
+	$(DOCKER) run $(IMAGE):$(TAG)
+
 # RELEASE #####################################################################
 
-TWINE := pipenv run twine
+TWINE := $(PIPENV) run twine
 
 .PHONY: upload
 upload: dist ## Upload the current version to PyPI
@@ -186,7 +212,7 @@ clean-all: clean ## Delete all generated and temporary files including virtual e
 
 .PHONY: help
 help: all  ## Show this message
-	@which pipenv > /dev/null 2>&1 || (echo "pipenv was not found in PATH. Install pipenv or fix PATH."; exit 1)
+	@which $(PIPENV) > /dev/null 2>&1 || (echo "$(PIPENV) was not found in PATH. Install $(PIPENV) or fix PATH."; exit 1)
 	@echo -e "\nUsage: \n"
 	@ grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\t\033[36mmake %-30s\033[0m %s\n", $$1, $$2}'
 
